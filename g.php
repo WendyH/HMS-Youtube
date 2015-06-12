@@ -26,9 +26,7 @@ $pageHtml = file_get_contents($VideoUrl, false, $context);
 
 // Search ytPlayer.Config json in video page
 if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
-	print_r($pageHtml);
 	$msg = preg_match('/<h[^>]+unavailable-message.*?<\/h\d>/s', $pageHtml, $matches) ? $matches[0] : '';
-	var_dump($pageHtml);
 	if ($msg) $msg = trim(strip_tags($msg));
 	if ($msg) die(StatusError(2, $msg));
 	else die(StatusError(3, "Video page do not contains player.config json object"));
@@ -192,13 +190,13 @@ function GetAlgorithm($jsUrl) {
 
 // ----------------------------------------------------------------------------
 function YoutubeDecrypt($sig, $algorithm) {
-    $method = explode(" ", $algorithm);
-    foreach($method as $m)
-    {   //  r - revers,  s - clone,  w - swap
-        if           ($m     =='r') $sig = strrev($sig);
-        elseif(substr($m,0,1)=='s') $sig = substr($sig, (int)substr($m, 1));
-        elseif(substr($m,0,1)=='w') $sig =   swap($sig, (int)substr($m, 1));
-    }
+	$method = explode(" ", $algorithm);
+	foreach($method as $m)
+	{	//  r - revers,  s - clone,  w - swap
+		if           ($m     =='r') $sig = strrev($sig);
+		elseif(substr($m,0,1)=='s') $sig = substr($sig, (int)substr($m, 1));
+		elseif(substr($m,0,1)=='w') $sig =   swap($sig, (int)substr($m, 1));
+	}
 	return $sig;
 }
 
@@ -234,17 +232,17 @@ function MediaFormatPriority($height, $mediaFormats) {
 
 // ----------------------------------------------------------------------------
 function Itag2Height($itag) {
-    if     (in_array($itag, array(13,17,160,36           ))) return 144;
-    elseif (in_array($itag, array(5,83,133,242           ))) return 240;
-    elseif (in_array($itag, array(6                      ))) return 270;
-    elseif (in_array($itag, array(18,34,43,82,100,134,243))) return 360;
-    elseif (in_array($itag, array(35,44,101,135,244,43   ))) return 480;
-    elseif (in_array($itag, array(22,45,84,102,136,247   ))) return 720;
-    elseif (in_array($itag, array(37,46,137,248          ))) return 1080;
-    elseif (in_array($itag, array(264,271                ))) return 1440;
-    elseif (in_array($itag, array(266                    ))) return 2160;
-    elseif (in_array($itag, array(138,272                ))) return 2304;
-    elseif (in_array($itag, array(38                     ))) return 3072;
+	if     (in_array($itag, array(13,17,160,36           ))) return 144;
+	elseif (in_array($itag, array(5,83,133,242           ))) return 240;
+	elseif (in_array($itag, array(6                      ))) return 270;
+	elseif (in_array($itag, array(18,34,43,82,100,134,243))) return 360;
+	elseif (in_array($itag, array(35,44,101,135,244,43   ))) return 480;
+	elseif (in_array($itag, array(22,45,84,102,136,247   ))) return 720;
+	elseif (in_array($itag, array(37,46,137,248          ))) return 1080;
+	elseif (in_array($itag, array(264,271                ))) return 1440;
+	elseif (in_array($itag, array(266                    ))) return 2160;
+	elseif (in_array($itag, array(138,272                ))) return 2304;
+	elseif (in_array($itag, array(38                     ))) return 3072;
 	return 0;
 }
 // ----------------------------------------------------------------------------
