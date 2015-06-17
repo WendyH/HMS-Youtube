@@ -29,7 +29,7 @@ $pageHtml = file_get_contents($VideoUrl, false, $context);
 // Search ytPlayer.Config json in video page
 if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
 	// try another country
-	echo file_get_contents('http://obereg-us.ru/g.php?'.http_build_query($_REQUEST));
+	echo file_get_contents('http://rus.lostcut.net/youtube/g.php?'.http_build_query($_REQUEST));
 	exit;
 }
 
