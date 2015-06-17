@@ -8,6 +8,7 @@ $adaptive     = isset($_REQUEST['adaptive'     ]) ? (int)$_REQUEST['adaptive'   
 $allLinks     = isset($_REQUEST['all_links'    ]) ? (int)$_REQUEST['all_links'    ] : 0;    // Return all streams
 $humanReadable= isset($_REQUEST['hr'           ]) ? (int)$_REQUEST['hr'           ] : 0;    // Answer as human readable json (pretty view)
 $auth         = isset($_REQUEST['auth'         ]) ?      $_REQUEST['auth'         ] : '';   // Access token
+$time         = isset($_REQUEST['t'            ]) ?      $_REQUEST['t'            ] : '';   // Time begin of video
 
 if (!$videoId) die(StatusError(1, "No video id in parameters"));
 
@@ -22,9 +23,17 @@ $options  = array(
 if ($auth) $options['http']['header'] .= "Authorization: Bearer ".$auth."\r\n" ;
 $context  = stream_context_create($options);
 $VideoUrl = 'http://www.youtube.com/watch?v='.$videoId.'&hl=ru&persist_hl=1&has_verified=1&bpctr='.(time() + (2.5 * 60 * 60));
+if ($time) $VideoUrl .= '&t='.$time;
 $pageHtml = file_get_contents($VideoUrl, false, $context);
 
 // Search ytPlayer.Config json in video page
+if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
+	// try another country
+	echo file_get_contents('http://obereg-us.ru/g.php?'.http_build_query($_REQUEST));
+	exit;
+}
+
+
 if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
 	$msg = preg_match('/<h[^>]+unavailable-message.*?<\/h\d>/s', $pageHtml, $matches) ? $matches[0] : '';
 	if ($msg) $msg = trim(strip_tags($msg));
@@ -177,7 +186,7 @@ function GetAlgorithm($jsUrl) {
 				$textFunc = $m[2];
 		}
 		// get the value of parameter
-		$numb = preg_match('/(\d+)/', $func, $m) ? $m[1] : '';
+		$numb = preg_match('/\(.*?(\d+)/', $func, $m) ? $m[1] : '';
 		// determine the type of the function
 		$type = 'w';
 		if     (preg_match('/revers/'        , $textFunc, $m)) $type = 'r';
