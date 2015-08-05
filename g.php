@@ -11,6 +11,7 @@ $auth         = isset($_REQUEST['auth'         ]) ?      $_REQUEST['auth'       
 $time         = isset($_REQUEST['t'            ]) ?      $_REQUEST['t'            ] : '';   // Time begin of video
 $notDE        = isset($_REQUEST['notde'        ]) ? (int)$_REQUEST['notde'        ] : 0;    // Do not try to get the video from Germany
 $ip	      = isset($_REQUEST['ip'           ]) ?      $_REQUEST['ip'           ] : '';   // Real IP
+$ip           = isset($_REQUEST['usemyip'      ]) ?      $_SERVER['REMOTE_ADDR']    : $ip;  // Flag - set user`s real ip
 $checkRestrict= isset($_REQUEST['checkrestrict']) ? (int)$_REQUEST['checkrestrict'] : 0;    // Check region restriction
 
 if (!$videoId) die(StatusError(1, "No video id in parameters"));
