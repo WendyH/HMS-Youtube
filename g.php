@@ -25,7 +25,7 @@ $options  = array(
               "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36\r\n"
   )
 );
-if ($ip  ) $options['http']['X-Forwarded-For'] = $ip."\r\n";
+if ($ip  ) $options['http']['header'] .= "X-Forwarded-For: ".$ip."\r\n" ;
 if ($auth) $options['http']['header'] .= "Authorization: Bearer ".$auth."\r\n" ;
 $context  = stream_context_create($options);
 $VideoUrl = 'http://www.youtube.com/watch?v='.$videoId.'&hl=ru&persist_hl=1&has_verified=1&bpctr='.(time() + (2.5 * 60 * 60));
