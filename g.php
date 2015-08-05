@@ -9,12 +9,9 @@ $allLinks     = isset($_REQUEST['all_links'    ]) ? (int)$_REQUEST['all_links'  
 $humanReadable= isset($_REQUEST['hr'           ]) ? (int)$_REQUEST['hr'           ] : 0;    // Answer as human readable json (pretty view)
 $auth         = isset($_REQUEST['auth'         ]) ?      $_REQUEST['auth'         ] : '';   // Access token
 $time         = isset($_REQUEST['t'            ]) ?      $_REQUEST['t'            ] : '';   // Time begin of video
-<<<<<<< HEAD
 $notDE        = isset($_REQUEST['notde'        ]) ? (int)$_REQUEST['notde'        ] : 0;    // Do not try to get the video from Germany
 $ip	      = isset($_REQUEST['ip'           ]) ?      $_REQUEST['ip'           ] : '';   // Real IP
 $checkRestrict= isset($_REQUEST['checkrestrict']) ? (int)$_REQUEST['checkrestrict'] : 0;    // Check region restriction
-=======
->>>>>>> origin/master
 
 if (!$videoId) die(StatusError(1, "No video id in parameters"));
 
@@ -37,11 +34,7 @@ $pageHtml = file_get_contents($VideoUrl, false, $context);
 
 // Search ytPlayer.Config json in video page
 if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
-<<<<<<< HEAD
 	if ($checkRestrict) die(StatusError(6, "Video unavaliable"));
-=======
-	// try another country
->>>>>>> origin/master
 	echo file_get_contents('http://rus.lostcut.net/youtube/g.php?'.http_build_query($_REQUEST));
 	exit;
 }
