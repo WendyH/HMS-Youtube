@@ -8,8 +8,14 @@ $adaptive     = isset($_REQUEST['adaptive'     ]) ? (int)$_REQUEST['adaptive'   
 $allLinks     = isset($_REQUEST['all_links'    ]) ? (int)$_REQUEST['all_links'    ] : 0;    // Return all streams
 $humanReadable= isset($_REQUEST['hr'           ]) ? (int)$_REQUEST['hr'           ] : 0;    // Answer as human readable json (pretty view)
 $auth         = isset($_REQUEST['auth'         ]) ?      $_REQUEST['auth'         ] : '';   // Access token
+$time         = isset($_REQUEST['t'            ]) ?      $_REQUEST['t'            ] : '';   // Time begin of video
+$notDE        = isset($_REQUEST['notde'        ]) ? (int)$_REQUEST['notde'        ] : 0;    // Do not try to get the video from Germany
+$ip	      = isset($_REQUEST['ip'           ]) ?      $_REQUEST['ip'           ] : '';   // Real IP
+$checkRestrict= isset($_REQUEST['checkrestrict']) ? (int)$_REQUEST['checkrestrict'] : 0;    // Check region restriction
 
 if (!$videoId) die(StatusError(1, "No video id in parameters"));
+
+if ($notDE) { echo file_get_contents('http://rus.lostcut.net/youtube/g.php?'.http_build_query($_REQUEST)); exit; }
 
 // Load the youtube video page
 $options  = array(
@@ -19,12 +25,21 @@ $options  = array(
               "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36\r\n"
   )
 );
+if ($ip  ) $options['http']['X-Forwarded-For'] = $ip."\r\n";
 if ($auth) $options['http']['header'] .= "Authorization: Bearer ".$auth."\r\n" ;
 $context  = stream_context_create($options);
 $VideoUrl = 'http://www.youtube.com/watch?v='.$videoId.'&hl=ru&persist_hl=1&has_verified=1&bpctr='.(time() + (2.5 * 60 * 60));
+if ($time) $VideoUrl .= '&t='.$time;
 $pageHtml = file_get_contents($VideoUrl, false, $context);
 
 // Search ytPlayer.Config json in video page
+if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
+	if ($checkRestrict) die(StatusError(6, "Video unavaliable"));
+	echo file_get_contents('http://rus.lostcut.net/youtube/g.php?'.http_build_query($_REQUEST));
+	exit;
+}
+
+
 if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
 	$msg = preg_match('/<h[^>]+unavailable-message.*?<\/h\d>/s', $pageHtml, $matches) ? $matches[0] : '';
 	if ($msg) $msg = trim(strip_tags($msg));
@@ -177,7 +192,7 @@ function GetAlgorithm($jsUrl) {
 				$textFunc = $m[2];
 		}
 		// get the value of parameter
-		$numb = preg_match('/(\d+)/', $func, $m) ? $m[1] : '';
+		$numb = preg_match('/\(.*?(\d+)/', $func, $m) ? $m[1] : '';
 		// determine the type of the function
 		$type = 'w';
 		if     (preg_match('/revers/'        , $textFunc, $m)) $type = 'r';
