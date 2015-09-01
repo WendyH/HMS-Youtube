@@ -186,16 +186,20 @@ function GetAlgorithm($jsUrl) {
 	foreach ($arr as $func) {
 		$textFunc = $func;
 		// if called function of object - search the object and its function
-		if (preg_match('/(\w+)\.(\w+)\(/', $textFunc, $m)) {
+		if (preg_match('/([\$\w]+)\.(\w+)\(/', $textFunc, $m)) {
 			$obj = $m[1];
 			$fun = $m[2];
 			if (($obj!='a') && preg_match('/var '.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\()(.*?})/', $data, $m))
+				$textFunc = $m[2];
+			else if (($obj!='a') && preg_match('/var \\'.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\()(.*?})/', $data, $m))
 				$textFunc = $m[2];
 		}
 		// if called named function - search text of this function
 		if (preg_match('/a=(\w+)\(/', $textFunc, $m)) {
 			$fun = $m[1];
 			if (preg_match('/var '.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\())(.*?})/', $data, $m))
+				$textFunc = $m[2];
+			else if (preg_match('/var \\'.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\())(.*?})/', $data, $m))
 				$textFunc = $m[2];
 		}
 		// get the value of parameter
