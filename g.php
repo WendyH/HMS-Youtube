@@ -71,8 +71,8 @@ if ($adaptive && $PlayerConfig['args\\adaptive_fmts'])
 
 if (!$streamMap && !$isLive) die(StatusError(4, "Can not found stream map in player config"));
 
-$playerId    = preg_match('/html5player-([\w_-]+)/', $jsUrl, $matches) ? $matches[1] : '';
-$algorithm   = $Algorithms[$playerId];
+$playerId    = preg_match('/player-([\w_-]+)/', $jsUrl, $matches) ? $matches[1] : '';
+$algorithm   = $playerId ? $Algorithms[$playerId] : '';
 $selectedUrl = '';
 $height      = 0;
 $minPriority = 9;
