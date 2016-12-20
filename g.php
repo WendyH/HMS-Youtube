@@ -14,6 +14,7 @@ $ip           = isset($_REQUEST['ip'           ]) ?      $_REQUEST['ip'         
 $ip           = isset($_REQUEST['usemyip'      ]) ?      $_SERVER['REMOTE_ADDR']    : $ip;  // Flag - set user`s real ip
 $checkRestrict= isset($_REQUEST['checkrestrict']) ? (int)$_REQUEST['checkrestrict'] : 0;    // Check region restriction
 $headers      = isset($_REQUEST['headers'      ]) ?      $_REQUEST['headers'      ] : '';   // Additional heades for youtube page request. Delimiter is '|'.
+$redirect     = isset($_REQUEST['redirect'     ]); // redirect to gotten link
 
 if (!$videoId) die(StatusError(1, "No video id in parameters"));
 
@@ -171,6 +172,11 @@ if ($allLinks) {
 }
 
 // The End with output results
+if ($redirect) {
+	header('Location: '.$selectedUrl);
+	die();
+}
+
 if ($linkOnly)      die($selectedUrl);
 if ($humanReadable) die(json_encode($resultObject, JSON_PRETTY_PRINT));
 else                die(json_encode($resultObject));
