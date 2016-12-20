@@ -188,7 +188,7 @@ function GetAlgorithm($jsUrl) {
 	$data = file_get_contents($jsUrl);
 	$fns  = preg_match('/a=a\.split\(""\);(.*?)return/', $data, $m) ? $m[1] : '';
 	$arr  = explode(';', $fns);
-	// Iterate all operations in algirithm
+	// Iterate all operations in algorithm
 	foreach ($arr as $func) {
 		$textFunc = $func;
 		// if called function of object - search the object and its function
