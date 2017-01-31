@@ -18,8 +18,6 @@ $redirect     = isset($_REQUEST['redirect'     ]); // redirect to gotten link
 
 if (!$videoId) die(StatusError(1, "No video id in parameters"));
 
-if ($notDE) { echo file_get_contents('http://rus.lostcut.net/youtube/g.php?'.http_build_query($_REQUEST)); exit; }
-
 // Load the youtube video page
 $options  = array(
   'http'=>array(
@@ -184,6 +182,8 @@ else                die(json_encode($resultObject));
 ///////////////////////////////////////////////////////////////////////////////
 
 function GetAlgorithm($jsUrl) {
+	if      (substr($jsUrl, 0, 2)=="//") $jsUrl = "https:".$jsUrl;
+	else if (substr($jsUrl, 0, 1)=="/" ) $jsUrl = "https://www.youtube.com".$jsUrl;
 	$algo = "";
 	$data = file_get_contents($jsUrl);
 	$fns  = preg_match('/a=a\.split\(""\);(.*?)return/', $data, $m) ? $m[1] : '';
