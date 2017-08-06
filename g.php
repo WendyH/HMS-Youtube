@@ -154,6 +154,9 @@ if ($isLive) {
 			}
 		} elseif (($height>$selHeight) && ($height<=$maxHeight)) {
 			$selectedUrl = $url; $selHeight = $height;
+			
+		} elseif (($height>=$selHeight) && ($height<=$maxHeight) && (in_array($itag, [18,22,37,38,82,83,84,85]))) {
+			$selectedUrl = $url; $selHeight = $height; // MP4 format prioritet
 		}
 	}
 }
@@ -186,30 +189,30 @@ function GetAlgorithm($jsUrl) {
 	else if (substr($jsUrl, 0, 1)=="/" ) $jsUrl = "https://www.youtube.com".$jsUrl;
 	$algo = "";
 	$data = file_get_contents($jsUrl);
-	$fns  = preg_match('/a=a\.split\(""\);(.*?)return/', $data, $m) ? $m[1] : '';
+	$fns  = preg_match('/a=a\.split\(""\);(.*?)return/s', $data, $m) ? $m[1] : '';
 	$arr  = explode(';', $fns);
 	// Iterate all operations in algorithm
 	foreach ($arr as $func) {
 		$textFunc = $func;
 		// if called function of object - search the object and its function
-		if (preg_match('/([\$\w]+)\.(\w+)\(/', $textFunc, $m)) {
+		if (preg_match('/([\$\w]+)\.(\w+)\(/s', $textFunc, $m)) {
 			$obj = $m[1];
 			$fun = $m[2];
-			if (($obj!='a') && preg_match('/var '.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\()(.*?})/', $data, $m))
+			if (($obj!='a') && preg_match('/var '.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\()(.*?})/s', $data, $m))
 				$textFunc = $m[2];
-			else if (($obj!='a') && preg_match('/var \\'.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\()(.*?})/', $data, $m))
+			else if (($obj!='a') && preg_match('/var \\'.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\()(.*?})/s', $data, $m))
 				$textFunc = $m[2];
 		}
 		// if called named function - search text of this function
-		if (preg_match('/a=(\w+)\(/', $textFunc, $m)) {
+		if (preg_match('/a=(\w+)\(/s', $textFunc, $m)) {
 			$fun = $m[1];
-			if (preg_match('/var '.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\())(.*?})/', $data, $m))
+			if (preg_match('/var '.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\())(.*?})/s', $data, $m))
 				$textFunc = $m[2];
-			else if (preg_match('/var \\'.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\())(.*?})/', $data, $m))
+			else if (preg_match('/var \\'.$obj.'=\{.*?('.$fun.':function|function '.$fun.'\())(.*?})/s', $data, $m))
 				$textFunc = $m[2];
 		}
 		// get the value of parameter
-		$numb = preg_match('/\(.*?(\d+)/', $func, $m) ? $m[1] : '';
+		$numb = preg_match('/\(.*?(\d+)/s', $func, $m) ? $m[1] : '';
 		// determine the type of the function
 		$type = 'w';
 		if     (preg_match('/revers/'        , $textFunc, $m)) $type = 'r';
