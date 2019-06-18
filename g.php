@@ -45,7 +45,6 @@ if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
 	exit;
 }
 
-
 if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
 	$msg = preg_match('/<h[^>]+unavailable-message.*?<\/h\d>/s', $pageHtml, $matches) ? $matches[0] : '';
 	if ($msg) $msg = trim(strip_tags($msg));
@@ -54,9 +53,10 @@ if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
 }
 
 $PlayerConfig = new ArrayPath($matches[1]);
-$Algorithms   = new IniDatabase('algorithms.ini');
+$Algorithms   = new IniDatabase('algorithms_g.ini');
 
-$hlsUrl      = ExpandUrl($PlayerConfig['args\\hlsvp']);
+$player_resp = new ArrayPath($PlayerConfig['args\\player_response']);
+$hlsUrl      = $player_resp['streamingData\\hlsManifestUrl'];
 $ttsUrl      = ExpandUrl($PlayerConfig['args\\ttsurl']);
 $flp         = ExpandUrl($PlayerConfig['url']);
 $jsUrl       = ExpandUrl($PlayerConfig['assets\\js']);
@@ -70,7 +70,7 @@ if ($adaptive && $PlayerConfig['args\\adaptive_fmts'])
 
 if (!$streamMap && !$isLive) die(StatusError(4, "Can not found stream map in player config"));
 
-$playerId    = preg_match('/player-([\w_-]+)/', $jsUrl, $matches) ? $matches[1] : '';
+$playerId    = preg_match('@player\w*?-([^/]+)@', $jsUrl, $matches) ? $matches[1] : '';
 $algorithm   = $playerId ? $Algorithms[$playerId] : '';
 $selectedUrl = '';
 $height      = 0;
@@ -78,7 +78,7 @@ $minPriority = 9;
 $selHeight   = 0;
 $selAudio    = '';
 
-if (!$algorithm && !$isLive) {
+if ($playerId && !$algorithm && !$isLive) {
 	// If no algorithm in our database - load javascript, search and store algo
 	$algorithm = GetAlgorithm($jsUrl);
 	if ($algorithm) $Algorithms[$playerId] = $algorithm;
@@ -137,7 +137,7 @@ if ($isLive) {
 
 		if (strpos($url, 'signature=')===false) {
 			if (!$sig) $sig = YoutubeDecrypt($s, $algorithm);
-			$url .= '&signature=' . $sig;
+			$url .= '&sig=' . $sig;
 		}
 		$map->Array['height'] = $height;
 		$map->Array['3D'    ] = $is3D;
@@ -267,17 +267,17 @@ function MediaFormatPriority($height, $mediaFormats) {
 
 // ----------------------------------------------------------------------------
 function Itag2Height($itag) {
-	if     (in_array($itag, array(13,17,160,36           ))) return 144;
-	elseif (in_array($itag, array(5,83,133,242           ))) return 240;
-	elseif (in_array($itag, array(6                      ))) return 270;
-	elseif (in_array($itag, array(18,34,43,82,100,134,243))) return 360;
-	elseif (in_array($itag, array(35,44,101,135,244,43   ))) return 480;
-	elseif (in_array($itag, array(22,45,84,102,136,247   ))) return 720;
-	elseif (in_array($itag, array(37,46,137,248          ))) return 1080;
-	elseif (in_array($itag, array(264,271                ))) return 1440;
-	elseif (in_array($itag, array(266                    ))) return 2160;
-	elseif (in_array($itag, array(138,272                ))) return 2304;
-	elseif (in_array($itag, array(38                     ))) return 3072;
+	if     (in_array($itag, array(13,17,160,278                                            ))) return 144;
+	elseif (in_array($itag, array(5,36,92,132,133,242,331                                  ))) return 240;
+	elseif (in_array($itag, array(6                                                        ))) return 270;
+	elseif (in_array($itag, array(18,34,43,82,100,93,134,167,243,332                       ))) return 360;
+	elseif (in_array($itag, array(35,44,59,78,83,101,94,135,212,168,218,219,244,245,246,333))) return 480;
+	elseif (in_array($itag, array(22,45,84,102,95,136,298,169,247,302,334                  ))) return 720;
+	elseif (in_array($itag, array(37,46,85,96,137,170,248,299,303,335                      ))) return 1080;
+	elseif (in_array($itag, array(264,271,308,336                                          ))) return 1440;
+	elseif (in_array($itag, array(266,313,315,138,337                                      ))) return 2160;
+	elseif (in_array($itag, array(38                                                       ))) return 3072;
+	elseif (in_array($itag, array(272                                                      ))) return 4320;
 	return 0;
 }
 // ----------------------------------------------------------------------------
