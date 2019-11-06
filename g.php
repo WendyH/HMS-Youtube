@@ -9,7 +9,6 @@ $allLinks     = isset($_REQUEST['all_links'    ]) ? (int)$_REQUEST['all_links'  
 $humanReadable= isset($_REQUEST['hr'           ]) ? (int)$_REQUEST['hr'           ] : 0;    // Answer as human readable json (pretty view)
 $auth         = isset($_REQUEST['auth'         ]) ?      $_REQUEST['auth'         ] : '';   // Access token
 $time         = isset($_REQUEST['t'            ]) ?      $_REQUEST['t'            ] : '';   // Time begin of video
-$notDE        = isset($_REQUEST['notde'        ]) ? (int)$_REQUEST['notde'        ] : 0;    // Do not try to get the video from Germany
 $ip           = isset($_REQUEST['ip'           ]) ?      $_REQUEST['ip'           ] : '';   // Real IP
 $ip           = isset($_REQUEST['usemyip'      ]) ?      $_SERVER['REMOTE_ADDR']    : $ip;  // Flag - set user`s real ip
 $checkRestrict= isset($_REQUEST['checkrestrict']) ? (int)$_REQUEST['checkrestrict'] : 0;    // Check region restriction
@@ -38,10 +37,11 @@ $VideoUrl = 'http://www.youtube.com/watch?v='.$videoId.'&hl=ru&persist_hl=1&has_
 if ($time) $VideoUrl .= '&t='.$time;
 $pageHtml = file_get_contents($VideoUrl, false, $context);
 
+//die($pageHtml);
+
 // Search ytPlayer.Config json in video page
 if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
 	if ($checkRestrict) die(StatusError(6, "Video unavaliable"));
-	echo file_get_contents('http://rus.lostcut.net/youtube/g.php?'.http_build_query($_REQUEST));
 	exit;
 }
 
@@ -53,7 +53,7 @@ if (!preg_match('/player.config\s*?=\s*?({.*?});/', $pageHtml, $matches)) {
 }
 
 $PlayerConfig = new ArrayPath($matches[1]);
-$Algorithms   = new IniDatabase('algorithms_g.ini');
+$Algorithms   = new IniDatabase('algorithms.ini');
 
 $player_resp = new ArrayPath($PlayerConfig['args\\player_response']);
 $hlsUrl      = $player_resp['streamingData\\hlsManifestUrl'];
@@ -135,7 +135,7 @@ if ($isLive) {
 		if (!$allLinks && (!strpos($type, 'flv') && !strpos($type, 'mp4'))) continue;
 		$height = Itag2Height($itag);
 
-		if (strpos($url, 'signature=')===false) {
+		if ((strpos($url, 'signature=')===false) && $s) {
 			if (!$sig) $sig = YoutubeDecrypt($s, $algorithm);
 			$url .= '&sig=' . $sig;
 		}
@@ -179,8 +179,8 @@ if ($redirect) {
 }
 
 if ($linkOnly)      die($selectedUrl);
-if ($humanReadable) die(json_encode($resultObject, JSON_PRETTY_PRINT));
-else                die(json_encode($resultObject));
+if ($humanReadable) die(json_encode($resultObject, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+else                die(json_encode($resultObject, JSON_UNESCAPED_SLASHES));
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -226,6 +226,7 @@ function GetAlgorithm($jsUrl) {
 // ----------------------------------------------------------------------------
 function YoutubeDecrypt($sig, $algorithm) {
 	$method = explode(" ", $algorithm);
+	if (!$sig) return "";
 	foreach($method as $m)
 	{	//  r - revers,  s - clone,  w - swap
 		if           ($m     =='r') $sig = strrev($sig);
@@ -267,17 +268,17 @@ function MediaFormatPriority($height, $mediaFormats) {
 
 // ----------------------------------------------------------------------------
 function Itag2Height($itag) {
-	if     (in_array($itag, array(13,17,160,278                                            ))) return 144;
-	elseif (in_array($itag, array(5,36,92,132,133,242,331                                  ))) return 240;
-	elseif (in_array($itag, array(6                                                        ))) return 270;
-	elseif (in_array($itag, array(18,34,43,82,100,93,134,167,243,332                       ))) return 360;
-	elseif (in_array($itag, array(35,44,59,78,83,101,94,135,212,168,218,219,244,245,246,333))) return 480;
-	elseif (in_array($itag, array(22,45,84,102,95,136,298,169,247,302,334                  ))) return 720;
-	elseif (in_array($itag, array(37,46,85,96,137,170,248,299,303,335                      ))) return 1080;
-	elseif (in_array($itag, array(264,271,308,336                                          ))) return 1440;
-	elseif (in_array($itag, array(266,313,315,138,337                                      ))) return 2160;
-	elseif (in_array($itag, array(38                                                       ))) return 3072;
-	elseif (in_array($itag, array(272                                                      ))) return 4320;
+	if     (in_array($itag, array(13,17,160,36           ))) return 144;
+	elseif (in_array($itag, array(5,83,133,242           ))) return 240;
+	elseif (in_array($itag, array(6                      ))) return 270;
+	elseif (in_array($itag, array(18,34,43,82,100,134,243))) return 360;
+	elseif (in_array($itag, array(35,44,101,135,244,43   ))) return 480;
+	elseif (in_array($itag, array(22,45,84,102,136,247   ))) return 720;
+	elseif (in_array($itag, array(37,46,137,248          ))) return 1080;
+	elseif (in_array($itag, array(264,271                ))) return 1440;
+	elseif (in_array($itag, array(266                    ))) return 2160;
+	elseif (in_array($itag, array(138,272                ))) return 2304;
+	elseif (in_array($itag, array(38                     ))) return 3072;
 	return 0;
 }
 // ----------------------------------------------------------------------------

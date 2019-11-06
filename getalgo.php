@@ -1,4 +1,5 @@
 <?php header("Content-Type: text/html; charset=utf-8");
+
 include 'classes.php';
 
 $Algorithms = new IniDatabase('algorithms.ini');
@@ -7,8 +8,10 @@ $playerId = isset($_REQUEST['id'   ]) ? $_REQUEST['id'   ] : '';   // Html5 JS P
 $jsUrl    = isset($_REQUEST['jsurl']) ? $_REQUEST['jsurl'] : '';   // 
 
 if (!$playerId) {
-    $playerId = preg_match('/player-([\w_-]+)/', $jsUrl, $matches) ? $matches[1] : '';
+    $playerId = preg_match('@player\w*?-([^/]+)@', $jsUrl, $matches) ? $matches[1] : '';
     if (!$playerId) Die('No player id');
+//var_dump($Algorithms);
+
 }
 
 $algorithm  = $playerId ? $Algorithms[$playerId] : '';
@@ -25,7 +28,6 @@ exit();
 
 
 //////////////////////////////////////////////////////////////////////////////////////
-
 function GetAlgorithm($jsUrl) {
 	if      (substr($jsUrl, 0, 2)=="//") $jsUrl = "https:".$jsUrl;
 	else if (substr($jsUrl, 0, 1)=="/" ) $jsUrl = "https://www.youtube.com".$jsUrl;
@@ -33,7 +35,7 @@ function GetAlgorithm($jsUrl) {
 	$data = file_get_contents($jsUrl);
 	$fns  = preg_match('/a=a\.split\(""\);(.*?)return/s', $data, $m) ? $m[1] : '';
 	$arr  = explode(';', $fns);
-	// Iterate all operations in algirithm
+	// Iterate all operations in algorithm
 	foreach ($arr as $func) {
 		$textFunc = $func;
 		// if called function of object - search the object and its function
@@ -63,4 +65,18 @@ function GetAlgorithm($jsUrl) {
 		$algo .= ($type=='r') ? $type.' ' : $type.$numb.' ';
 	}
 	return trim($algo);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+function LoadPage($url) {
+	$headers = "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36\r\n" .
+	           "Accept-Encoding: gzip, deflate\r\n" .
+	           "Referer: https://www.youtube.com/\r\n";
+    $options = array();
+    $options['http'] = array('method' => 'GET',
+                             'protocol_version' => 1.1,
+                             'header' => $headers);
+    $context = stream_context_create($options);
+    $page    = file_get_contents($url, false, $context);
+    return $page;
 }
