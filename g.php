@@ -189,7 +189,7 @@ function GetAlgorithm($jsUrl) {
 	else if (substr($jsUrl, 0, 1)=="/" ) $jsUrl = "https://www.youtube.com".$jsUrl;
 	$algo = "";
 	$data = file_get_contents($jsUrl);
-	$fns  = preg_match('/a=a\.split\(""\);(.*?)return/s', $data, $m) ? $m[1] : '';
+	$fns  = preg_match('/\b\w{2}=function\(a\)\{a=a\.split\(""\);(.*?)return/s', $data, $m) ? $m[1] : '';
 	$arr  = explode(';', $fns);
 	// Iterate all operations in algorithm
 	foreach ($arr as $func) {
