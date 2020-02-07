@@ -34,7 +34,7 @@ if (!preg_match('/player.config\s*?=\s*?({.*?});/s', $page_html, $matches)) {
 	die(json_encode(["status"=>"error", "message"=>$msg]));
 }
 
-$player_config   = json_decode($matches[1], true);    // Превращаем найденный config в именнованный массив
+$player_config   = json_decode($matches[1], true);    // Превращаем найденный config в именованный массив
 $player_response = json_decode($player_config["args"]["player_response"], true); // Там же должны быть json данные в поле "player_response"
 $streaming_data  = $player_response["streamingData"]; // Получаем массив с данными о доступных форматах
 
@@ -85,7 +85,7 @@ if (isset($streaming_data["adaptiveFormats"])) {
 	}
 }
 
-// Если в кэше алгоритмов такого ID-плеера ещё небыло, то устанавливаем и сохраняем
+// Если в кэше алгоритмов такого ID-плеера ещё не было, то устанавливаем и сохраняем
 if (!isset($algorithms[$player_id]) || !$algorithms[$player_id]) {
 	$algorithms[$player_id] = $algorithm;  // Устанавливаем соответствие ID-плеера алгоритму дешифровки
 	SafeWrite($algo_cache, json_encode($algorithms, JSON_PRETTY_PRINT)); // Вызываем функцию сохранения кэша на диск
@@ -93,7 +93,7 @@ if (!isset($algorithms[$player_id]) || !$algorithms[$player_id]) {
 
 // Поиск субтитров для языка, указанного языка в переменной $lang
 $subtUrl = ""; // Ссылка на субтитры указанного языка
-$subtEng = ""; // Ссылка на английские субтиты (для перевода с них, если указанного языка не найдено)
+$subtEng = ""; // Ссылка на английские субтитры (для перевода с них, если указанного языка не найдено)
 if (isset($player_response["captions"]["playerCaptionsTracklistRenderer"]["captionTracks"])) {
 	foreach ($player_response["captions"]["playerCaptionsTracklistRenderer"]["captionTracks"] as $subt) {
 		if ($subt["languageCode"]==$lang) $subtUrl = $subt["baseUrl"];
@@ -157,7 +157,7 @@ function GetAlgorithm($jsUrl) {
 		// Определяем тип вызываемой функции в данной итерации
 		$type = 'w'; // По-умолчанию w = Swap - поменять местами первый символ с символом по указанному индексу
 		if     (preg_match('/revers/'        , $textFunc, $m)) $type = 'r'; // 'r' = Revers - перевернуть строку задом наперёд
-		elseif (preg_match('/(splice|slice)/', $textFunc, $m)) $type = 's'; // 's' = Slice - обрезать строку на указанную длину
+		elseif (preg_match('/(splice|slice)/', $textFunc, $m)) $type = 's'; // 's' = Slice - получить строку c указанного индекса
 		if (($type!='r') && ($numb==='')) continue; // Если нет параметра у функции и это не Revers, то пропускаем, это не команда дешифровки
 		$algo .= ($type=='r') ? $type.' ' : $type.$numb.' '; // Формируем алгоритм, указывая тип и значение параметра в виде "w4 r s29" 
 	}
@@ -187,9 +187,9 @@ function swap($str, $b) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Безопасная запись в файл кэша на диске (с одижанием, если в данный файл уже кто-то пишет)
+// Безопасная запись в файл кэша на диске (с ожиданием, если в данный файл уже кто-то пишет)
 function SafeWrite($filename, $data) {
-	// Открываем файл на запись, если отсубствует, пытаемся создать
+	// Открываем файл на запись, если отсутствует, пытаемся создать
 	if ($fp = @fopen($filename, 'w')) {
 		$start = microtime(TRUE);
 		do {
