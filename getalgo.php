@@ -3,10 +3,9 @@
 $player_id = isset($_REQUEST['id'   ]) ? $_REQUEST['id'   ] : '';   // Html5 JS Player id
 $js_url    = isset($_REQUEST['jsurl']) ? $_REQUEST['jsurl'] : '';   // 
 
-if (!$player_id) {
-    $player_id = preg_match('@player\w*?-([^/]+)@', $js_url, $matches) ? $matches[1] : '';
-    if (!$player_id) Die('No player id');
-}
+if (!$player_id) $player_id = preg_match('@player\w*?-([^/]+)@', $js_url, $matches) ? $matches[1] : '';
+if (!$player_id) $player_id = preg_match('@player/([^/]+)/@'   , $js_url, $matches) ? $matches[1] : '';
+if (!$player_id) Die('No player id');
 
 $algo_cache = "cache/algorithms.json"; // Каталог cache уже должен быть создан и с правами на запись
 
@@ -70,9 +69,9 @@ function GetAlgorithm($jsUrl) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Безопасная запись в файл кэша на диске (с ожиданием, если в данный файл уже кто-то пишет)
+// Безопасная запись в файл кэша на диске (с одижанием, если в данный файл уже кто-то пишет)
 function SafeWrite($filename, $data) {
-	// Открываем файл на запись, если отсутствует, пытаемся создать
+	// Открываем файл на запись, если отсубствует, пытаемся создать
 	if ($fp = @fopen($filename, 'w')) {
 		$start = microtime(TRUE);
 		do {
